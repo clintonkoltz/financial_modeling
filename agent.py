@@ -49,10 +49,10 @@ class AgentMeanReversion:
                 trend = long_trend_end - long_trend_start
                 trend_percent = (trend / long_trend_end)
                 std = np.std(self.history[stock])
-                if ((stock_price > moving_avg + 1*std)):# and (trend_percent < 0)):
-                    decisions[stock] = "SELL"
+                if ((stock_price > moving_avg + 1*std) and (trend_percent < 0)):
+                    decisions[stock] = ("SELL", moving_avg + 1*std)
                 elif ((stock_price < moving_avg - 1*std) and (trend_percent > 0)):
-                    decisions[stock] = "BUY"
+                    decisions[stock] = ("BUY", moving_avg - 1*std)
                 else:
                     decisions[stock] = None
                 self.history[stock] = self.history[stock][1:]
@@ -93,7 +93,7 @@ class AgentMACD:
         for stock in self.stocks:
             stock_price = data.get(stock)
             if (stock_price == None):
-                decisions[stock] = None
+                decisions[stock] = (None, None)
                 continue
 
             stock_price = stock_price['close']
@@ -103,16 +103,16 @@ class AgentMACD:
                 tmp = np.append(self.MAC1[stock], stock_price)
                 self.MAC1[stock] = tmp
 
-                decisions[stock] = None
+                decisions[stock] = (None, None)
 
                 if (len(self.MAC2[stock]) < self.mac2_num):
 
                     tmp = np.append(self.MAC2[stock], stock_price)
                     self.MAC2[stock] = tmp
 
-                    decisions[stock] = None
+                    decisions[stock] = (None, None)
 
-                decisions[stock] = None
+                decisions[stock] = (None, None)
 
             else:
                 # Add in somthing about macd history and trade when 
@@ -120,13 +120,14 @@ class AgentMACD:
                 mac1 = sum(self.MAC1[stock] * self.beta_array[:self.mac1_num])
                 mac2 = sum(self.MAC2[stock] * self.beta_array[:self.mac2_num])
                 macd = mac2 - mac1
+                condition_value = macd
 
-                if (macd > 0):
-                    decisions[stock] = "SELL"
-                elif (macd < 0):
-                    decisions[stock] = "BUY"
+                if (condition_value > 0):
+                    decisions[stock] = ("SELL", condition_value)
+                elif (condition_value < 0):
+                    decisions[stock] = ("BUY", condition_value)
                 else:
-                    decisions[stock] = None
+                    decisions[stock] = (None, None)
 
                 self.MAC1[stock] = self.MAC1[stock][1:]
                 tmp = np.append(self.MAC1[stock], stock_price)
