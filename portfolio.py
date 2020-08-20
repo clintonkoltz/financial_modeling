@@ -15,7 +15,6 @@ class Portfolio:
     def add(self, stock, price, day, quantity):
         # TODO use quantity for cash
         if (price < self.cash):
-            print(f"Bought {stock} price {price}")
             self.active.append(Holding(stock, price, day, quantity))
             self.cash -= price
 
@@ -34,7 +33,6 @@ class Portfolio:
     def sold(self, stock, price, day, quantity):
         for holding in self.active:
             if (holding.stock== stock):
-                print(f"Sold {stock} price {price}")
                 # If selling less make new holding
                 # and sell that then update old to new amount
                 if (holding.quantity > quantity):
