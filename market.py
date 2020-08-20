@@ -12,7 +12,7 @@ class StockMarketDict:
     for given stocks
     """
 
-    def __init__(self, stocks=[], random_price=False, data_file="daily_all.pkl"):
+    def __init__(self, stocks=[], random_price=False, data_file="./data/daily_all.pkl"):
         self.data_file = data_file
         self.random_price = random_price
         with open(self.data_file, "rb") as fh:
@@ -34,7 +34,7 @@ class StockMarketDict:
                 data = self.data[current_day]
                 yield {stock: data.get(stock) for stock in self.stocks}
 
-    def sell(self, ticker, current_date):
+    def sell(self, stock, current_date):
         """
         Selling will be uniform random roll over high low value
         """
@@ -42,57 +42,38 @@ class StockMarketDict:
             return None
 
         if (self.random_price):
-            high = self.data[current_date][ticker].get('high')
-            low = self.data[current_date][ticker].get('low')
+            high = self.data[current_date][stock].get('high')
+            low = self.data[current_date][stock].get('low')
             if ((high==None) or (low==None)):
                 return None
             r = random.random()
             sell_price = low * r + high * (1-r)
             return sell_price
         else:
-            return self.data[current_date][ticker].get("open")
+            return self.data[current_date][stock].get("open")
 
-    def buy(self, ticker, current_date):
+    def buy(self, stock, current_date):
         if current_date not in self.data.keys():
             return None
 
         if (self.random_price):
-            high = self.data[current_date][ticker].get('high')
-            low = self.data[current_date][ticker].get('low')
-            if ((high==None) or (low==None)):
-                return None
+            high = self.data[current_date][stock].get('high')
+            low = self.data[current_date][stock].get('low')
+            if ((high==None) or (low==None)): return None
             r = random.random()
             buy_price = low * r + high * (1-r)
             return buy_price
         else:
-            return self.data[current_date][ticker].get("open")
+            return self.data[current_date][stock].get("open")
 
+    def current_price(self, stock, current_date):
+        if current_date not in self.data.keys():
+            return None
 
-#    def _format_date(self, current_date):
-#        day_str = current_date.strftime("%Y-%m-%d")
-#        return day_str
-#
-#    def available_stocks(self, current_date):
-#        formatted_date = self._format_date(current_date)
-#        results = self.data.get(formatted_date)
-#        if (results == None):
-#            return
-#        return list(results.keys())
-#
-#    def current_price(self, ticker, current_date):
-#        formatted_date = self._format_date(current_date)
-#
-#        # Check date exists. If not market is closed.
-#        if formatted_date not in self.data.keys():
-#            return None
-#
-#        result = self.data[formatted_date][ticker].get('open')
-#
-#        # Check if there is some holiday buy checking if any stocks have a price
-#        if (not result):
-#                return None
-#
-#        return result
+        result = self.data[formatted_date][stock].get('open')
+        if (not result):
+                return None
+        return result
 
 class StockMarketSQL:
 
