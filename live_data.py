@@ -13,7 +13,7 @@ def load_symbols(filename):
 
 class StockStream:
 
-    def __init__(self, stocks, save_folder="./raw_data"):
+    def __init__(self, stocks, save_folder="./data/raw_data"):
         self.stocks = stocks
         self.save_folder = save_folder
         websocket.enableTrace(True)
