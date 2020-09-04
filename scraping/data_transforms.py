@@ -33,19 +33,41 @@ def load_csv(filename):
         data = list(filter(lambda x: x['Open'] != 'None', reader))
     return data
 
-def csv2dict(directory):
-    intra_files = glob.glob(f"{directory}/*.csv")
-    big_dict = {}
+def csv2dict(directory, filter_str="*.csv", big_dict={}):
+    """
+    Data is scraped into csv on a per company basis.
+    We want to organized the data with time as the keys
+    Once we download all the new stock data. add it to the old stock dictionary
+
+    Args:
+        directory: str
+            location of csv files to be processed
+        filter_str: str
+            string to filter out csv files that need to be added
+        big_dict: dictionary
+            original dictionary to be updated
+    Returns:
+        big_dict: dictionary with new time values updated
+
+    """
+    # Get all filter to parse
+    intra_files = glob.glob(f"{directory}/"+filter_str)
+    # Tmp dictionary to hold all the data loaded
+    # since there is overlap in the time frames of new data
+    tmp_dict = {}
+
     for filename in intra_files:
-        ticker = filename.split("/")[-1].split("_")[0]
+        # Files are saved in format "STOCK_date.csv"
+        # remove anyleading directory info and get the stock name
+        stock = filename.split("/")[-1].split("_")[0]
         data = load_csv(filename)
         for item in data:
+            # Use both the date and time are separate keys
             date_time = item['Time']
-            # TODO
-            # This probably needs to be changed for how the directory is input  
             date = date_time.split(" ")[0].strip()
             time = date_time.split(" ")[1].strip()
-            company_dict = { ticker: {
+
+            company_dict = { stock: {
                                 "open":   item['Open'],
                                 "close":  item['Close'],
                                 "high":   item['High'],
@@ -53,19 +75,25 @@ def csv2dict(directory):
                                 "volume": item['Volume'],
                                  }
                            }
-            if big_dict.get(date):
-                if big_dict[date].get(time):
-                    big_dict[date][time].update(company_dict)
+            # Handle cases where this is first instance of date time keys
+            if tmp_dict.get(date):
+                if tmp_dict[date].get(time):
+                    tmp_dict[date][time].update(company_dict)
                 else:
-                    big_dict[date].update({time: {}})
-                    big_dict[date][time].update(company_dict)
+                    tmp_dict[date].update({time: {}})
+                    tmp_dict[date][time].update(company_dict)
             else:
-                big_dict[date] = {}
-                if big_dict[date].get(time):
-                    big_dict[date][time].update(company_dict)
+                tmp_dict[date] = {}
+                if tmp_dict[date].get(time):
+                    tmp_dict[date][time].update(company_dict)
                 else:
-                    big_dict[date].update({time: {}})
-                    big_dict[date][time].update(company_dict)
+                    tmp_dict[date].update({time: {}})
+                    tmp_dict[date][time].update(company_dict)
+
+    # Only update new keys into larger dictionary
+    for k in tmp_dict.keys():
+        if k not in big_dict.keys()
+            big_dict[k] = tmp_dict[k]
 
     return big_dict
 

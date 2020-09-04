@@ -10,7 +10,8 @@ class AlphaFinanceAPI:
     def __init__(self):
         self.base_url = "https://www.alphavantage.co/query"
         self.headers = {}
-        self.key  = "I992MXIVP5APH6P5"
+        assert os.environ.get('ALPHA_API_KEY'), "Please set Alpha api key 'ALPHA_API_KEY'"
+        self.key  = os.environ.get('ALPHA_API_KEY')
 
     def price_history(self, ticker, outputsize='full', interval=None):
         params = {'function': "TIME_SERIES_DAILY",
@@ -58,7 +59,8 @@ class FinanceAPI:
     def __init__(self):
         self.base_url = "https://financialmodelingprep.com/api/v3/"
         self.headers = {"Content-type": "application/json"}
-        self.data = {"apikey": "f9894a015ae82e8680bd155fac5178f3"}
+        assert os.environ.get('FinanceAPI_KEY'), "Please set Finance api key 'FinanceAPI_KEY'"
+        self.data = {"apikey": os.environ.get('FinanceAPI_KEY')}
 
     def profile(self, ticker):
         url_extra = "company/profile/"

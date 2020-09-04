@@ -11,15 +11,27 @@ class Portfolio:
         self.equity = 0
         self.cash = cash
         self.initial_cash = cash
+        self.value_over_time = {}
 
     def add(self, stock, price, day, quantity):
         # TODO use quantity for cash
         if (price < self.cash):
             self.active.append(Holding(stock, price, day, quantity))
             self.cash -= price
+            self.value_over_time[day] = self.total_value
+
+    @property
+    def current_stocks(self):
+        return list(map(lambda h: h.stock, self.active))
 
     @property
     def total_value(self):
+        cash_reserves = sum([h.profit for h in self.historical])
+        equity = sum([a.buy_price for a in self.active])
+        return (cash_reserves + equity + self.cash)
+
+    @property
+    def total_gain(self):
         cash_reserves = sum([h.profit for h in self.historical])
         equity = sum([a.buy_price for a in self.active])
         return 100*((cash_reserves + equity + self.cash) - self.initial_cash) / self.initial_cash
@@ -32,7 +44,7 @@ class Portfolio:
 
     def sold(self, stock, price, day, quantity):
         for holding in self.active:
-            if (holding.stock== stock):
+            if (holding.stock == stock):
                 # If selling less make new holding
                 # and sell that then update old to new amount
                 if (holding.quantity > quantity):
@@ -49,6 +61,9 @@ class Portfolio:
                     holding.sell(price, day)
                     self.move_completed()
                 self.cash += price
+
+                self.value_over_time[day] = self.total_value
+
                 break
 
 class Holding:

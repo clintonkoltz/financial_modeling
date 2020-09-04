@@ -2,6 +2,7 @@ import mysql.connector
 import pandas as pd
 import random
 import pickle
+import os
 from datetime import datetime, date, timedelta
 
 
@@ -12,7 +13,7 @@ class StockMarketDict:
     for given stocks
     """
 
-    def __init__(self, stocks=[], random_price=False, data_file="./data/daily_all.pkl"):
+    def __init__(self, stocks=[], random_price=False, data_file="./data/intraday_datetimes_1min.pkl"):
         self.data_file = data_file
         self.random_price = random_price
         with open(self.data_file, "rb") as fh:
@@ -32,6 +33,7 @@ class StockMarketDict:
                 yield self.data[current_day]
             else:
                 data = self.data[current_day]
+                print(data.get(self.stocks[0]))
                 yield {stock: data.get(stock) for stock in self.stocks}
 
     def sell(self, stock, current_date):
@@ -41,30 +43,38 @@ class StockMarketDict:
         if current_date not in self.data.keys():
             return None
 
+        stock_data = self.data[current_date].get(stock)
+        if (stock_data == None):
+            return None
+
         if (self.random_price):
-            high = self.data[current_date][stock].get('high')
-            low = self.data[current_date][stock].get('low')
+            high = stock_data.get('high')
+            low = stock_data.get('low')
             if ((high==None) or (low==None)):
                 return None
             r = random.random()
             sell_price = low * r + high * (1-r)
             return sell_price
         else:
-            return self.data[current_date][stock].get("open")
+            return stock_data.get("open")
 
     def buy(self, stock, current_date):
         if current_date not in self.data.keys():
             return None
 
+        stock_data = self.data[current_date].get(stock)
+        if (stock_data == None):
+            return None
+
         if (self.random_price):
-            high = self.data[current_date][stock].get('high')
-            low = self.data[current_date][stock].get('low')
+            high = stock_data.get('high')
+            low = stock_data.get('low')
             if ((high==None) or (low==None)): return None
             r = random.random()
             buy_price = low * r + high * (1-r)
             return buy_price
         else:
-            return self.data[current_date][stock].get("open")
+            return stock_data.get("open")
 
     def current_price(self, stock, current_date):
         if current_date not in self.data.keys():
@@ -78,7 +88,9 @@ class StockMarketDict:
 class StockMarketSQL:
 
     def __init__(self, table="dailyTicker"):
-        self.con = mysql.connector.connect(user="klinton", database="stocks", password="43MY39ka!")
+        assert os.environ.get('DB_USER'), "Set mysql database user DB_USER"
+        assert os.environ.get('DB_PASS'), "Set mysql database password DB_PASS"
+        self.con = mysql.connector.connect(user=os.environ.get('DB_USER'), database="stocks", password=os.enviorn.get('DB_PASS'))
         self.cur = self.con.cursor()
         self.table = table
         self.current_date = date(1999,11,1)

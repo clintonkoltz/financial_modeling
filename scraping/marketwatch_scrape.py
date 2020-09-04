@@ -3,6 +3,7 @@ from datetime import datetime, date
 import json
 import csv
 import os
+import requests
 
 
 class MarketWatchScraper():
@@ -92,7 +93,7 @@ class MarketWatchScraper():
         tick = int(tick) / 1000
         return datetime.utcfromtimestamp(tick).strftime("%Y-%m-%d %H:%M:%S")
 
-    def save_intraday(self, stock, save_dir="../intradays", log_file="intraday_fails.log"):
+    def save_intraday(self, stock, save_dir="../data/intradays", log_file="intraday_fails.log"):
         day = date.today().strftime("%m_%d_%y")
         save_file = os.path.join(save_dir, f"{stock}_intra_1min_{day}.csv")
 

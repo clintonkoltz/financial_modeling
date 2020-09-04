@@ -17,7 +17,8 @@ class StockStream:
         self.stocks = stocks
         self.save_folder = save_folder
         websocket.enableTrace(True)
-        self.ws = websocket.WebSocketApp("wss://ws.finnhub.io?token=bst8b2748v6ol9tkvfl0",
+        assert os.environ.get('finnhub_token'), "Please set finnhub token for websocket"
+        self.ws = websocket.WebSocketApp("wss://ws.finnhub.io?token="+os.environ.get("finnhub_token"),
                     on_message = lambda ws, message: self.on_message(ws, message),
                     on_error = lambda ws, message: self.on_error(ws, message),
                     on_close = lambda ws: self.on_close(ws),
